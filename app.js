@@ -1,47 +1,54 @@
 
-/*************** Includes ***************/
-
+/*************** Modules ***************/
 const express = require("express");
 const bodyParser = require("body-parser");
+const date = require(__dirname + "/modules/date.js");
 
 /*************** Setup ***************/
-
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 app.set("view engine", "ejs");
 
 /*************** Globals ***************/
-
 const items = [];
+const workItems = [];
 
-// GET req to root
+/*************** /ROOT ***************/
 app.get("/", (req, res) => {
 
-  let today = new Date();
-  let options = {
-    weekday: "long",
-    month: "long",
-    day: "numeric"
-  };
+  const day = date.getDate();
 
-  let day = today.toLocaleDateString("en-UK", options);
+  res.render("list", { listTitle: day, newItems: items });
 
-  res.render("list", { kindOfDay: day, newItems: items });
 });
 
-// POST req to root
 app.post("/", (req, res) => {
 
-  items.push(req.body.todoItem);
+  const item = req.body.todoItem;
 
-  res.redirect("/");
+  if (req.body.list === "Work List") {
+    workItems.push(item);
+    res.redirect("/work");
+  } else {
+    items.push(item);
+    res.redirect("/");
+  }
 
 });
 
+/*************** /WORK ***************/
+app.get("/work", (req, res) => {
+
+  res.render("list", { listTitle: "Work List", newItems: workItems });
+
+})
 
 
-// Listen
+
+// Start server on port 3000
 app.listen(3000, () => {
+
   console.log("Server started on port 3000")
+
 });
